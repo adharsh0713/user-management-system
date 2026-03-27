@@ -1,21 +1,21 @@
 package com.adharsh.usermanagement.model;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "users")
 public class User {
-    @Setter
-    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Getter
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -26,22 +26,41 @@ public class User {
     private String name;
 
     @Column(nullable = false)
-    private boolean isActive = true;
+    private boolean active = true;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    public static User create(String email,String name, String passwordHash, Instant now){
+        if (email == null || email.isBlank()) throw new IllegalArgumentException("email required");
+        if (passwordHash == null) throw new IllegalArgumentException("password required");
+
+        User user = new User();
+        user.email = email;
+        user.name = name;
+        user.passwordHash = passwordHash;
+        user.active = true;
+        user.createdAt = now;
+        user.updatedAt = now;
+        return user;
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    public void deactivate(Instant now){
+        this.active = false;
+        this.updatedAt = now;
+
+    }
+
+    public void activate(Instant now){
+        this.active = true;
+        this.updatedAt = now;
+    }
+
+    public void updatePassword(String newHash, Instant now){
+        this.passwordHash = newHash;
+        this.updatedAt = now;
     }
 }
