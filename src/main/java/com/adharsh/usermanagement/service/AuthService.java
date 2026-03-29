@@ -9,6 +9,7 @@ import com.adharsh.usermanagement.exception.UserAlreadyExistsException;
 import com.adharsh.usermanagement.exception.UserDoesNotExistsException;
 import com.adharsh.usermanagement.model.User;
 import com.adharsh.usermanagement.repository.UserRepository;
+import com.adharsh.usermanagement.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +23,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Transactional
     public UserRegistrationResponse registerUser(UserRegistrationRequest request) {
@@ -69,9 +71,11 @@ public class AuthService {
 
         log.info("User logged with email: {}", email);
 
+        String token = jwtUtil.generateToken(user.getEmail());
+
         return new UserLoginResponse(
                 user.getEmail(),
-                "Login Successful."
+                token
         );
     }
 }
