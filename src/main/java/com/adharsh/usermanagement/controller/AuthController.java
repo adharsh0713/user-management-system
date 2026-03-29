@@ -1,7 +1,10 @@
 package com.adharsh.usermanagement.controller;
 
+import com.adharsh.usermanagement.dto.request.UserLoginRequest;
 import com.adharsh.usermanagement.dto.request.UserRegistrationRequest;
-import com.adharsh.usermanagement.service.UserService;
+import com.adharsh.usermanagement.dto.response.UserLoginResponse;
+import com.adharsh.usermanagement.dto.response.UserRegistrationResponse;
+import com.adharsh.usermanagement.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +16,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final UserService userService;
+    private final AuthService authService;
 
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
     }
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@Valid @RequestBody UserRegistrationRequest request){
-        userService.registerUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
+        UserRegistrationResponse response = authService.registerUser(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody UserLoginRequest request){
+        UserLoginResponse response =  authService.loginUser(request);
+        return ResponseEntity.ok(response);
     }
 }
