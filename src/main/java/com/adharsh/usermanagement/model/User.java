@@ -16,51 +16,62 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String passwordHash;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
     @Column(nullable = false)
     private Instant updatedAt;
 
-    public static User create(String email,String name, String passwordHash, Instant now){
+    public static User create(String email,String name, String passwordHash){
         if (email == null || email.isBlank()) throw new IllegalArgumentException("email required");
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("name required");
         if (passwordHash == null) throw new IllegalArgumentException("password required");
 
         User user = new User();
-        user.email = email;
-        user.name = name;
+        user.email = email.trim().toLowerCase();
+        user.name = name.trim();
         user.passwordHash = passwordHash;
         user.active = true;
-        user.createdAt = now;
-        user.updatedAt = now;
         return user;
     }
 
-    public void deactivate(Instant now){
+    @PrePersist
+    public void onCreate() {
+        Instant now = Instant.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
+    public void deactivate(){
         this.active = false;
-        this.updatedAt = now;
 
     }
 
-    public void activate(Instant now){
+    public void activate(){
         this.active = true;
-        this.updatedAt = now;
     }
 
-    public void updatePassword(String newHash, Instant now){
+    public void updatePassword(String newHash){
+        if (newHash == null || newHash.isBlank()) {
+            throw new IllegalArgumentException("password required");
+        }
         this.passwordHash = newHash;
-        this.updatedAt = now;
     }
 }
